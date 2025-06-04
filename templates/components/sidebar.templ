@@ -1,0 +1,93 @@
+package components
+
+import (
+	"fmt"
+	"github.com/tinkerbaj/redditjobs/models"
+)
+
+templ Sidebar(subreddits []models.Subreddit) {
+	<ul class="menu bg-base-200 text-base-content min-h-full w-80 p-4 text-black">
+		<!-- Open the modal using ID.showModal() method -->
+		<li class="border-b py-4 text-xl text-center mb-6 text-base-content">All subreddits</li> <!-- Sidebar content here -->
+		<li class="btn btn-primary" onclick="subredditmodal.showModal()">Add new subreddit</li>
+		<li><a href="/" class="text-base-content btn btn-accent my-2">All posts</a></li>
+		for _, sub := range subreddits {
+			<li>
+				<div class="flex justify-between">
+					<details>
+						<summary class="text-base-content">{ sub.Name } </summary>
+						<ul>
+							for _, flair := range sub.Flairs {
+								<li><a class="text-base-content" href={ templ.URL(fmt.Sprintf("/sub/%s/%s", sub.Name, flair.Name)) }>{ flair.Name }</a></li>
+							}
+						</ul>
+					</details>
+					<button class="btn btn-warning" data-id={ fmt.Sprintf("subredditmodaledit%d", sub.ID) } onclick="handleModalClick(this)">Edit</button>
+				</div>
+			</li>
+			@EditSubreddit(sub)
+		}
+		@AddSubreddit()
+	</ul>
+	<script>
+
+</script>
+}
+
+templ AddSubreddit() {
+	<dialog id="subredditmodal" class="modal">
+		<div class="modal-box ">
+			<form class="space-y-2" data-on-submit="@post('/add-subreddit', {contentType: 'form'})">
+				<h2 class="text-lg text-center text-bold border-b mb-6">Add new subreddit</h2>
+				<fieldset class="fieldset w-full">
+					<legend class="fieldset-legend">Enter the subreddit</legend>
+					<input type="text" name="name" class="input validator w-full" placeholder="forhire" required/>
+					<p class="validator-hint">Subreddit name is required</p>
+				</fieldset>
+				<fieldset class="fieldset w-full">
+					<legend class="fieldset-legend">Enter the flairs</legend>
+					<input type="text" name="flairs" class="input validator w-full" placeholder="hiring" required/>
+					<p class="label">Use , (comma) to add multiple flairs</p>
+					<p class="validator-hint">Subreddit name is required</p>
+				</fieldset>
+				<button class="btn btn-primary" type="submit">Submit form</button>
+			</form>
+		</div>
+		<form method="dialog" class="modal-backdrop">
+			<button>close</button>
+		</form>
+	</dialog>
+}
+
+templ EditSubreddit(sub models.Subreddit) {
+	<dialog class="modal" id={ fmt.Sprintf("subredditmodaledit%d", sub.ID) }>
+		<div class="modal-box ">
+			<form class="space-y-2" data-on-submit={ templ.URL(fmt.Sprintf("@patch('/edit-subreddit/%d', {contentType: 'form'})", sub.ID)) }>
+				<h2 class="text-lg text-center text-bold border-b mb-6">Edit </h2>
+				<fieldset class="fieldset w-full">
+					<legend class="fieldset-legend">Subreddit name</legend>
+					<input type="text" name="name" class="input validator w-full" placeholder="forhire" required value={ sub.Name }/>
+					<p class="validator-hint">Subreddit name is required</p>
+				</fieldset>
+				for _ , flair := range sub.Flairs {
+					<fieldset class="fieldset w-full">
+						<legend class="fieldset-legend">Edit { flair.Name }</legend>
+						<input type="hidden" name="flair_id[]" value={ fmt.Sprintf("%d", flair.ID) }/>
+						<input type="text" name="flairs[]" class="input validator w-full" placeholder="hiring" required value={ flair.Name }/>
+						<p class="validator-hint">Subreddit name is required</p>
+					</fieldset>
+				}
+				<fieldset class="fieldset w-full">
+					<legend class="fieldset-legend">Add more flairs?</legend>
+					<input type="text" name="newflairs" class="input validator w-full" placeholder="hiring"/>
+					<p class="label">Use , (comma) to add multiple flairs</p>
+					<p class="validator-hint">Subreddit name is required</p>
+				</fieldset>
+				<button class="btn btn-primary" type="submit">Submit form</button>
+			</form>
+		</div>
+		<form method="dialog" class="modal-backdrop">
+			<button>close</button>
+		</form>
+	</dialog>
+}

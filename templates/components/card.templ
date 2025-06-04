@@ -1,0 +1,49 @@
+package components
+
+import (
+	"fmt"
+	"time"
+)
+
+templ Card(title, author, description, link, subreddit, flair string, created time.Time) {
+	<div class="card bg-base-200 shadow-sm">
+		<div class="card-body">
+			<div class="flex justify-end">
+				<div class="badge badge-primary mr-5">{ subreddit }</div>
+				<div class="badge badge-secondary">{ flair }</div>
+			</div>
+			<h2 class="card-title">{ title }</h2>
+			<div class="flex items-center gap-2">
+				<p>Posted by: { author }</p>
+				<span class="text-xs opacity-70">{ humanTime(created) }</span>
+			</div>
+			<p>{ description }</p>
+			<div class="justify-end card-actions">
+				<a href={ templ.URL(fmt.Sprintf("https://www.reddit.com/%s", link)) } class="btn btn-primary" target="_blank">View Post</a>
+			</div>
+		</div>
+	</div>
+}
+
+//Its not perfect but at least it look better on the cards
+func humanTime(t time.Time) string {
+	now := time.Now()
+	diff := now.Sub(t)
+
+	switch {
+	case diff < time.Minute:
+		return "just now"
+	case diff < time.Hour:
+		return fmt.Sprintf("%d minutes ago", int(diff.Minutes()))
+	case diff < 24*time.Hour:
+		return fmt.Sprintf("%d hours ago", int(diff.Hours()))
+	case diff < 30*24*time.Hour:
+		days := int(diff.Hours() / 24)
+		if days == 1 {
+			return "1 day ago"
+		}
+		return fmt.Sprintf("%d days ago", days)
+	default:
+		return t.Format("January 2, 2006")
+	}
+}

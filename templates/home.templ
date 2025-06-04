@@ -1,0 +1,19 @@
+package templates
+
+import (
+	"github.com/tinkerbaj/redditjobs/models"
+	"github.com/tinkerbaj/redditjobs/templates/components"
+)
+
+templ Home(posts []models.Post) {
+	<div class="container mx-auto">
+		<div class="w-full flex justify-between">
+			<h1 class="text-3xl font-bold mb-6">All Posts</h1>
+		</div>
+		<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+			for _, post := range posts {
+				@components.Card(post.Title, post.Author, "", post.Permalink, post.Subreddit.Name, post.Flair.Name, post.CreatedAt)
+			}
+		</div>
+	</div>
+}
